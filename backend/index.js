@@ -1,12 +1,14 @@
 import express from 'express';
 import cors from 'cors';
 import axios from 'axios';
+import dotenv from 'dotenv';
+dotenv.config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-const GEMINI_API_KEY = 'AIzaSyDNs-J51iu8_j569fliZ3D6l3y2PCLlDvc'; // <-- Replace with your actual key
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY; // Now loaded from .env
 
 app.post('/extract', async (req, res) => {
   const { text } = req.body;
