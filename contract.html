@@ -25,8 +25,12 @@
           <textarea id="description" name="description" placeholder="e.g., 'Hire Arjun to build a landing page for ₹10,000 with delivery in 5 days'" required></textarea>
         </div>
         <div class="form-group">
-          <label for="parties">Parties Involved</label>
-          <input type="text" id="parties" name="parties" placeholder="Arjun, Priya" required />
+          <label for="from">From (Party Offering Contract)</label>
+          <input type="text" id="from" name="from" placeholder="e.g., Akrit (The Bbarn)" required />
+        </div>
+        <div class="form-group">
+          <label for="to">To (Party Receiving Contract)</label>
+          <input type="text" id="to" name="to" placeholder="e.g., District by Zomato" required />
         </div>
         <div class="form-group">
           <label for="deliverables">Deliverables</label>
@@ -60,7 +64,8 @@
         <!-- Placeholder: Live contract summary updates as user fills form (JS to be added) -->
         <div class="contract-summary">
           <p><strong>Description:</strong> <span class="preview-description">(Your contract description will appear here)</span></p>
-          <p><strong>Parties:</strong> <span class="preview-parties">(Parties will appear here)</span></p>
+          <p><strong>From:</strong> <span class="preview-from">(From party will appear here)</span></p>
+          <p><strong>To:</strong> <span class="preview-to">(To party will appear here)</span></p>
           <p><strong>Deliverables:</strong> <span class="preview-deliverables">(Deliverables will appear here)</span></p>
           <p><strong>Deadline:</strong> <span class="preview-deadline">(Deadline will appear here)</span></p>
           <p><strong>Payment:</strong> <span class="preview-payment">(Payment terms will appear here)</span></p>
@@ -93,9 +98,12 @@ contract SmartContract {
       const details = JSON.parse(localStorage.getItem('contractDetails') || '{}');
       if (details) {
         if (details.description) document.getElementById('description').value = details.description;
-        if (details.parties) document.getElementById('parties').value = details.parties;
+        if (details.from) document.getElementById('from').value = details.from;
+        if (details.to) document.getElementById('to').value = details.to;
         if (details.deliverables) document.getElementById('deliverables').value = details.deliverables;
-        if (details.deadline) {
+        if (details.deadline_iso) {
+          document.getElementById('deadline').value = details.deadline_iso;
+        } else if (details.deadline) {
           // Try to parse date if possible
           const deadlineInput = document.getElementById('deadline');
           const dateMatch = details.deadline.match(/\d{4}-\d{2}-\d{2}/);
@@ -113,7 +121,8 @@ contract SmartContract {
       // Live preview update
       const updatePreview = () => {
         document.querySelector('.preview-description').textContent = document.getElementById('description').value || '(Your contract description will appear here)';
-        document.querySelector('.preview-parties').textContent = document.getElementById('parties').value || '(Parties will appear here)';
+        document.querySelector('.preview-from').textContent = document.getElementById('from').value || '(From party will appear here)';
+        document.querySelector('.preview-to').textContent = document.getElementById('to').value || '(To party will appear here)';
         document.querySelector('.preview-deliverables').textContent = document.getElementById('deliverables').value || '(Deliverables will appear here)';
         document.querySelector('.preview-deadline').textContent = document.getElementById('deadline').value || document.getElementById('deadline').placeholder || '(Deadline will appear here)';
         document.querySelector('.preview-payment').textContent = document.getElementById('payment').value || '(Payment terms will appear here)';

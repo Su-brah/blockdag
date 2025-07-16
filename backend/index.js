@@ -17,21 +17,22 @@ app.post('/extract', async (req, res) => {
   // Gemini prompt for structured extraction
   const prompt = `
 Extract the following details from this contract description:
-- Parties involved
+- From (the party offering the contract)
+- To (the party receiving the contract)
 - Deliverables
 - Deadline
 - Payment terms
 - Milestones
 - Penalties or refund clauses
 
-Return the result as a JSON object with keys: description, parties, deliverables, deadline, payment, milestones, penalties.
+Return the result as a JSON object with keys: description, from, to, deliverables, deadline, payment, milestones, penalties.
 
 Description: """${text}"""
 `;
 
   try {
     const response = await axios.post(
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + GEMINI_API_KEY,
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + GEMINI_API_KEY,
       {
         contents: [{ parts: [{ text: prompt }] }]
       }
@@ -42,6 +43,30 @@ Description: """${text}"""
     const jsonMatch = aiText.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
       const extracted = JSON.parse(jsonMatch[0]);
+      // Format deadline to dd-mm-yyyy if possible
+      if (extracted.deadline) {
+        let date = new Date(extracted.deadline);
+        if (isNaN(date.getTime())) {
+          // Try to parse formats like '28th of July' or '28 July' and assume year 2025
+          const match = extracted.deadline.match(/(\d{1,2})(?:st|nd|rd|th)?(?: of)? ([A-Za-z]+)/);
+          if (match) {
+            const day = match[1];
+            const monthName = match[2];
+            const months = ["january","february","march","april","may","june","july","august","september","october","november","december"];
+            const monthIndex = months.findIndex(m => m.startsWith(monthName.toLowerCase()));
+            if (monthIndex !== -1) {
+              date = new Date(2025, monthIndex, parseInt(day));
+            }
+          }
+        }
+        if (!isNaN(date.getTime())) {
+          const day = String(date.getDate()).padStart(2, '0');
+          const month = String(date.getMonth() + 1).padStart(2, '0');
+          const year = date.getFullYear();
+          extracted.deadline = `${day}-${month}-${year}`; // for display
+          extracted.deadline_iso = `${year}-${month}-${day}`; // for input[type=date]
+        }
+      }
       res.json(extracted);
     } else {
       res.status(500).json({ error: 'AI did not return valid JSON', raw: aiText });
